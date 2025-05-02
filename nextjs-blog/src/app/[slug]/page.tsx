@@ -2,18 +2,21 @@ import { PortableText, type SanityDocument } from "next-sanity";
 import imageUrlBuilder from "@sanity/image-url";
 import type { SanityImageSource } from "@sanity/image-url/lib/types/types";
 import Link from "next/link";
+import { ImageUrlBuilder } from "@sanity/image-url/lib/types/builder";
 import { client } from "../sanity/client";
 
 // Simplified query to get everything
 const POST_QUERY = `*[_type == "post" && slug.current == $slug][0]`;
 
 const { projectId, dataset } = client.config();
-// Create the builder correctly
-const imageBuilder = imageUrlBuilder({ projectId, dataset });
 
-// Function to create image URL
-function urlFor(source: SanityImageSource) {
-  return imageBuilder.image(source);
+// Function to create image URL - improved with proper return type and null handling
+function urlFor(source: SanityImageSource): ImageUrlBuilder | null {
+  if (projectId && dataset && source) {
+    const imageBuilder = imageUrlBuilder({ projectId, dataset });
+    return imageBuilder.image(source);
+  }
+  return null;
 }
 
 const options = { next: { revalidate: 30 } };
@@ -45,7 +48,7 @@ export default async function PostPage({ params }) {
   console.log("Full post data:", post);
 
   // Let's try various possible image field names and structures
-  let postImageUrl = null;
+  let postImageUrl: string | null = null;
   let imageField = null;
 
   // Common field names for images in Sanity schemas
@@ -76,7 +79,10 @@ export default async function PostPage({ params }) {
         imageField.asset._ref
       ) {
         // Standard Sanity image reference
-        postImageUrl = urlFor(imageField).width(550).height(310).url();
+        const imageBuilder = urlFor(imageField);
+        if (imageBuilder) {
+          postImageUrl = imageBuilder.width(550).height(310).url();
+        }
       } else if (
         typeof imageField === "string" &&
         imageField.startsWith("http")
@@ -85,7 +91,10 @@ export default async function PostPage({ params }) {
         postImageUrl = imageField;
       } else {
         // Try the general approach
-        postImageUrl = urlFor(imageField).width(550).height(310).url();
+        const imageBuilder = urlFor(imageField);
+        if (imageBuilder) {
+          postImageUrl = imageBuilder.width(550).height(310).url();
+        }
       }
     } catch (error) {
       console.error("Error generating image URL:", error);
@@ -101,7 +110,7 @@ export default async function PostPage({ params }) {
       {postImageUrl && (
         <img
           src={postImageUrl}
-          alt={post.title}
+          alt={post.title || "Post image"}
           className="aspect-video rounded-xl"
           width="550"
           height="310"
