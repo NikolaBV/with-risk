@@ -7,16 +7,15 @@ import { client } from "../sanity/client";
 const POST_QUERY = `*[_type == "post" && slug.current == $slug][0]`;
 
 const { projectId, dataset } = client.config();
-const urlFor = (source: SanityImageSource) =>
-  projectId && dataset
-    ? imageUrlBuilder({ projectId, dataset }).image(source)
-    : null;
+const imageBuilder = imageUrlBuilder({ projectId, dataset });
+
+function urlFor(source: SanityImageSource) {
+  return imageBuilder.image(source);
+}
 
 const options = { next: { revalidate: 30 } };
 
-// @ts-expect-error - Bypassing type checking due to environment differences
 export default async function PostPage({ params }) {
-  // Handle params directly without worrying about type
   const slug = params?.slug || "";
   const decodedSlug = decodeURIComponent(slug);
 
@@ -37,15 +36,54 @@ export default async function PostPage({ params }) {
     );
   }
 
-  const postImageUrl = post.image
-    ? urlFor(post.image)?.width(550).height(310).url()
-    : null;
+  console.log("Full post data:", post);
+
+  let postImageUrl = null;
+  let imageField = null;
+
+  const possibleImageFields = [
+    "mainImage",
+    "image",
+    "coverImage",
+    "thumbnail",
+    "featuredImage",
+  ];
+
+  for (const fieldName of possibleImageFields) {
+    if (post[fieldName]) {
+      imageField = post[fieldName];
+      console.log(`Found image field: ${fieldName}`, imageField);
+      break;
+    }
+  }
+
+  if (imageField) {
+    try {
+      if (
+        imageField._type === "image" &&
+        imageField.asset &&
+        imageField.asset._ref
+      ) {
+        postImageUrl = urlFor(imageField).width(550).height(310).url();
+      } else if (
+        typeof imageField === "string" &&
+        imageField.startsWith("http")
+      ) {
+        postImageUrl = imageField;
+      } else {
+        postImageUrl = urlFor(imageField).width(550).height(310).url();
+      }
+    } catch (error) {
+      console.error("Error generating image URL:", error);
+    }
+  }
 
   return (
     <main className="container mx-auto min-h-screen max-w-3xl p-8 flex flex-col gap-4">
       <Link href="/" className="hover:underline">
         ← Back to posts
       </Link>
+
       {postImageUrl && (
         <img
           src={postImageUrl}
