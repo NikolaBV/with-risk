@@ -14,12 +14,14 @@ const urlFor = (source: SanityImageSource) =>
 
 const options = { next: { revalidate: 30 } };
 
-export default async function PostPage({
-  params,
-}: {
+// Use the correct type for Next.js 13+ App Router
+type PageProps = {
   params: { slug: string };
-}) {
-  const decodedSlug = decodeURIComponent(params.slug); // <-- fix here
+  searchParams?: { [key: string]: string | string[] | undefined };
+};
+
+export default async function PostPage({ params }: PageProps) {
+  const decodedSlug = decodeURIComponent(params.slug);
   const post = await client.fetch<SanityDocument>(
     POST_QUERY,
     { slug: decodedSlug },
@@ -57,7 +59,9 @@ export default async function PostPage({
       )}
       <h1 className="text-4xl font-bold mb-8">{post.title}</h1>
       <div className="prose">
-        <p>Published: {new Date(post.publishedAt).toLocaleDateString()}</p>
+        {post.publishedAt && (
+          <p>Published: {new Date(post.publishedAt).toLocaleDateString()}</p>
+        )}
         {Array.isArray(post.body) && <PortableText value={post.body} />}
       </div>
     </main>
