@@ -14,14 +14,17 @@ const urlFor = (source: SanityImageSource) =>
 
 const options = { next: { revalidate: 30 } };
 
-// Use the correct type for Next.js 13+ App Router
-type PageProps = {
-  params: { slug: string };
-  searchParams?: { [key: string]: string | string[] | undefined };
-};
+// Instead of defining our own type, we'll use the type inference
+export default async function PostPage({
+  params,
+}: {
+  // Use Promise type since that's what the error message suggests Next.js is expecting
+  params: Promise<{ slug: string }> | { slug: string };
+}) {
+  // Handle both Promise and direct object cases
+  const resolvedParams = params instanceof Promise ? await params : params;
+  const decodedSlug = decodeURIComponent(resolvedParams.slug);
 
-export default async function PostPage({ params }: PageProps) {
-  const decodedSlug = decodeURIComponent(params.slug);
   const post = await client.fetch<SanityDocument>(
     POST_QUERY,
     { slug: decodedSlug },
