@@ -2,12 +2,21 @@ import { getPostBySlug } from "../../lib/sanity/queries";
 import { logObject } from "../../lib/utils/logging";
 import PostNotFound from "../../components/blog/PostNotFound";
 import PostContent from "./components/PostContent";
+import type { Metadata, ResolvingMetadata } from "next";
 
-interface Props {
-  params: {
-    slug: string;
-  };
+type Props = {
+  params: { slug: string };
   searchParams?: { [key: string]: string | string[] | undefined };
+};
+
+export async function generateMetadata(
+  { params }: Props,
+  parent: ResolvingMetadata
+): Promise<Metadata> {
+  // You can implement metadata generation here if needed
+  return {
+    title: "Post",
+  };
 }
 
 export default async function PostPage({ params }: Props) {
