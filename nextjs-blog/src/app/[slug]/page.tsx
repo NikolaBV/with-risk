@@ -2,24 +2,40 @@ import { getPostBySlug } from "../../lib/sanity/queries";
 import { logObject } from "../../lib/utils/logging";
 import PostNotFound from "../../components/blog/PostNotFound";
 import PostContent from "./components/PostContent";
-import type { Metadata, ResolvingMetadata } from "next";
+import imageUrlBuilder from "@sanity/image-url";
+import type { SanityImageSource } from "@sanity/image-url/lib/types/types";
+import type { ImageUrlBuilder } from "@sanity/image-url/lib/types/builder";
+import { client } from "../../app/sanity/client";
 
-type Props = {
-  params: { slug: string };
-  searchParams?: { [key: string]: string | string[] | undefined };
-};
+const { projectId, dataset } = client.config();
 
-export async function generateMetadata(
-  { params }: Props,
-  parent: ResolvingMetadata
-): Promise<Metadata> {
-  // You can implement metadata generation here if needed
-  return {
-    title: "Post",
+// Define the image field type
+interface SanityImageField {
+  _type: "image";
+  asset: {
+    _ref: string;
+    _type: "reference";
   };
+  alt?: string;
+  caption?: string;
 }
 
-const PostPage: NextPage<Props> = async ({ params }) => {
+function urlFor(source: SanityImageSource): ImageUrlBuilder | null {
+  if (projectId && dataset && source) {
+    const imageBuilder = imageUrlBuilder({ projectId, dataset });
+    return imageBuilder.image(source);
+  }
+  return null;
+}
+
+interface Props {
+  params: {
+    slug: string;
+  };
+  searchParams?: { [key: string]: string | string[] | undefined };
+}
+
+export default async function PostPage({ params }: Props) {
   const slug = params?.slug || "";
   const post = await getPostBySlug(slug);
 
@@ -35,5 +51,45 @@ const PostPage: NextPage<Props> = async ({ params }) => {
     return <PostNotFound />;
   }
 
-  return <PostContent post={post} />;
-};
+  let postImageUrl: string | null = null;
+  const possibleImageFields = [
+    "mainImage",
+    "image",
+    "coverImage",
+    "thumbnail",
+    "featuredImage",
+  ];
+
+  // Find the first available image field with proper typing
+  const imageField = possibleImageFields.reduce<
+    SanityImageField | string | null
+  >((found, fieldName) => {
+    if (found) return found;
+    const fieldValue = post[fieldName];
+    if (
+      typeof fieldValue === "string" ||
+      (fieldValue && typeof fieldValue === "object" && "_type" in fieldValue)
+    ) {
+      return fieldValue as SanityImageField | string;
+    }
+    return null;
+  }, null);
+
+  if (imageField) {
+    try {
+      if (typeof imageField === "object" && imageField._type === "image") {
+        const imageBuilder = urlFor(imageField);
+        postImageUrl = imageBuilder?.width(550).height(310).url() || null;
+      } else if (
+        typeof imageField === "string" &&
+        imageField.startsWith("http")
+      ) {
+        postImageUrl = imageField;
+      }
+    } catch (error) {
+      console.error("Error generating image URL:", error);
+    }
+  }
+
+  return <PostContent post={{ ...post, imageUrl: postImageUrl }} />;
+}
