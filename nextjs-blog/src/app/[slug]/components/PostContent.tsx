@@ -23,16 +23,6 @@ export default function PostContent({ post }: PostContentProps) {
         ← Back to posts
       </Link>
 
-      {postImageUrl && (
-        <img
-          src={postImageUrl}
-          alt={post.title || "Post image"}
-          className="aspect-video rounded-xl"
-          width="550"
-          height="310"
-        />
-      )}
-
       <h1 className="text-4xl font-bold mb-8">
         {post.title || "Untitled Post"}
       </h1>

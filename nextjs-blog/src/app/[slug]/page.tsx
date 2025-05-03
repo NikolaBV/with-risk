@@ -13,7 +13,6 @@ export default async function PostPage({ params }: PostPageParams) {
   const slug = params?.slug || "";
   const post = await getPostBySlug(slug);
 
-  // Logging for debugging purposes
   if (post) {
     logObject("Full post data", post);
 

@@ -23,6 +23,9 @@ export interface Post extends SanityDocument {
   slug?: {
     current: string;
   };
+  author?: {
+    name: string;
+  };
   [key: string]: any;
 }
 
