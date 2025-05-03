@@ -4,13 +4,12 @@ import type { SanityImageSource } from "@sanity/image-url/lib/types/types";
 import Link from "next/link";
 import { ImageUrlBuilder } from "@sanity/image-url/lib/types/builder";
 import { client } from "../sanity/client";
+import * as util from "util";
 
-// Simplified query to get everything
 const POST_QUERY = `*[_type == "post" && slug.current == $slug][0]`;
 
 const { projectId, dataset } = client.config();
 
-// Function to create image URL - improved with proper return type and null handling
 function urlFor(source: SanityImageSource): ImageUrlBuilder | null {
   if (projectId && dataset && source) {
     const imageBuilder = imageUrlBuilder({ projectId, dataset });
@@ -19,11 +18,66 @@ function urlFor(source: SanityImageSource): ImageUrlBuilder | null {
   return null;
 }
 
+const logObject = (label: string, obj: any): void => {
+  console.log(
+    `${label}:`,
+    util.inspect(obj, {
+      depth: null,
+      colors: true,
+      maxArrayLength: 50,
+      maxStringLength: 500,
+    })
+  );
+};
+
+interface SanityImageValue {
+  _type?: string;
+  asset?: {
+    _ref: string;
+    [key: string]: any;
+  };
+  alt?: string;
+  caption?: string;
+  [key: string]: any;
+}
+
+const SanityImage = ({ value }: { value: SanityImageValue }) => {
+  if (!value?.asset?._ref) {
+    return null;
+  }
+
+  const imageBuilder = urlFor(value);
+
+  if (!imageBuilder) {
+    return null;
+  }
+
+  return (
+    <figure className="my-8">
+      <img
+        src={imageBuilder.width(800).auto("format").url()}
+        alt={value.alt || ""}
+        className="rounded-lg"
+        loading="lazy"
+      />
+      {value.caption && (
+        <figcaption className="text-sm text-gray-600 mt-2 text-center">
+          {value.caption}
+        </figcaption>
+      )}
+    </figure>
+  );
+};
+
 const options = { next: { revalidate: 30 } };
 
-// @ts-expect-error - Bypassing type checking due to environment differences
-export default async function PostPage({ params }) {
-  // Handle params directly without worrying about type
+interface PostPageParams {
+  params: {
+    slug: string;
+  };
+}
+
+export default async function PostPage({ params }: PostPageParams) {
   const slug = params?.slug || "";
   const decodedSlug = decodeURIComponent(slug);
 
@@ -44,14 +98,15 @@ export default async function PostPage({ params }) {
     );
   }
 
-  // Inspect the post structure to find the image field
-  console.log("Full post data:", post);
+  logObject("Full post data", post);
 
-  // Let's try various possible image field names and structures
+  if (post.body && Array.isArray(post.body)) {
+    logObject("Post body", post.body);
+  }
+
   let postImageUrl: string | null = null;
   let imageField = null;
 
-  // Common field names for images in Sanity schemas
   const possibleImageFields = [
     "mainImage",
     "image",
@@ -60,7 +115,6 @@ export default async function PostPage({ params }) {
     "featuredImage",
   ];
 
-  // Try to find an image field
   for (const fieldName of possibleImageFields) {
     if (post[fieldName]) {
       imageField = post[fieldName];
@@ -69,16 +123,13 @@ export default async function PostPage({ params }) {
     }
   }
 
-  // Try to generate URL if we found an image field
   if (imageField) {
     try {
-      // Handle different structures
       if (
         imageField._type === "image" &&
         imageField.asset &&
         imageField.asset._ref
       ) {
-        // Standard Sanity image reference
         const imageBuilder = urlFor(imageField);
         if (imageBuilder) {
           postImageUrl = imageBuilder.width(550).height(310).url();
@@ -87,10 +138,8 @@ export default async function PostPage({ params }) {
         typeof imageField === "string" &&
         imageField.startsWith("http")
       ) {
-        // Direct URL string
         postImageUrl = imageField;
       } else {
-        // Try the general approach
         const imageBuilder = urlFor(imageField);
         if (imageBuilder) {
           postImageUrl = imageBuilder.width(550).height(310).url();
@@ -100,6 +149,12 @@ export default async function PostPage({ params }) {
       console.error("Error generating image URL:", error);
     }
   }
+
+  const portableTextComponents = {
+    types: {
+      image: SanityImage,
+    },
+  };
 
   return (
     <main className="container mx-auto min-h-screen max-w-3xl p-8 flex flex-col gap-4">
@@ -117,11 +172,13 @@ export default async function PostPage({ params }) {
         />
       )}
       <h1 className="text-4xl font-bold mb-8">{post.title}</h1>
-      <div className="prose">
+      <div className="prose max-w-none">
         {post.publishedAt && (
           <p>Published: {new Date(post.publishedAt).toLocaleDateString()}</p>
         )}
-        {Array.isArray(post.body) && <PortableText value={post.body} />}
+        {Array.isArray(post.body) && (
+          <PortableText value={post.body} components={portableTextComponents} />
+        )}
       </div>
     </main>
   );
