@@ -1,39 +1,46 @@
 import type { SanityDocument } from "next-sanity";
+import type { PortableTextBlock } from "@portabletext/types";
+
+export interface SanityImageAssetReference {
+  _ref: string;
+  _type: string;
+  [key: string]: unknown; // For any additional properties
+}
 
 export interface SanityImageValue {
-  _type?: string;
-  asset?: {
-    _ref: string;
-    [key: string]: any;
-  };
+  _type?: "image";
+  asset?: SanityImageAssetReference;
   alt?: string;
   caption?: string;
-  [key: string]: any;
+  [key: string]: unknown; // For any additional properties
+}
+
+export interface Slug {
+  current: string;
+  _type: "slug";
+}
+
+export interface Author {
+  name: string;
+  [key: string]: unknown; // For any additional properties
 }
 
 export interface Post extends SanityDocument {
   title?: string;
   publishedAt?: string;
-  body?: any[];
+  body?: PortableTextBlock[];
   mainImage?: SanityImageValue;
   image?: SanityImageValue;
   coverImage?: SanityImageValue;
   thumbnail?: SanityImageValue;
   featuredImage?: SanityImageValue;
-  slug?: {
-    current: string;
-  };
-  author?: {
-    name: string;
-  };
-  [key: string]: any;
+  slug?: Slug;
+  author?: Author;
 }
 
 export interface PostListItem extends SanityDocument {
   _id: string;
   title: string;
-  slug: {
-    current: string;
-  };
+  slug: Slug;
   publishedAt?: string;
 }

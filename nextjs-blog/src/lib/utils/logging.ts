@@ -5,7 +5,7 @@ import * as util from "util";
  * @param label Description of what's being logged
  * @param obj Object to log
  */
-export const logObject = (label: string, obj: any): void => {
+export const logObject = <T>(label: string, obj: T): void => {
   console.log(
     `${label}:`,
     util.inspect(obj, {
