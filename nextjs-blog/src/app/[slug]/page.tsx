@@ -19,7 +19,7 @@ export async function generateMetadata(
   };
 }
 
-export default async function PostPage({ params }: Props) {
+const PostPage: NextPage<Props> = async ({ params }) => {
   const slug = params?.slug || "";
   const post = await getPostBySlug(slug);
 
@@ -36,4 +36,4 @@ export default async function PostPage({ params }: Props) {
   }
 
   return <PostContent post={post} />;
-}
+};
