@@ -1,7 +1,7 @@
 import { PortableText } from "next-sanity";
 import Link from "next/link";
 import type { Post } from "../../../types/sanity";
-import SanityImage from "../../../components/blog/SanityImage";
+import SanityImage from "../../components/blog/SanityImage";
 import { getPostImageUrl } from "../../../lib/sanity/image";
 
 interface PostContentProps {

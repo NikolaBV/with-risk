@@ -1,5 +1,5 @@
-import type { SanityImageValue } from "../../types/sanity";
-import { urlFor } from "../../lib/sanity/image";
+import type { SanityImageValue } from "../../../types/sanity";
+import { urlFor } from "../../../lib/sanity/image";
 
 interface SanityImageProps {
   value: SanityImageValue;
