@@ -44,6 +44,8 @@ export async function getPostBySlug(slug: string): Promise<Post | null> {
 export async function getAllPosts(): Promise<Post[]> {
   try {
     const posts = await client.fetch<Post[]>(POSTS_QUERY, {}, queryOptions);
+    console.log("All posts: ");
+    console.log(posts);
     return posts || [];
   } catch (error) {
     console.error("Error fetching posts:", error);
