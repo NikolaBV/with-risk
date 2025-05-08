@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Icons } from "./ui/icons";
+import { Avatar, AvatarFallback } from "./ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,7 +15,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
-import { Avatar, AvatarFallback } from "./ui/avatar";
 
 export function Navbar() {
   const router = useRouter();
