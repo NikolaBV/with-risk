@@ -1,38 +1,31 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
-import Navbar from "./components/Navbar";
+import { Toaster } from "sonner";
+import { Navbar } from "@/components/Navbar";
+import { AuthProvider } from "@/context/AuthContext";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "With Risk",
-  description: "Studentski Grad X Sveta Troica collab",
+  title: "WithRisk",
+  description: "Risk Management Platform",
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <html lang="en" className="dark">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <div>
-          <Navbar></Navbar>
-        </div>
-        {children}
-      </body>
-    </html>
+    <AuthProvider>
+      <html lang="en" className="dark">
+        <body className={inter.className}>
+          <Navbar />
+          <main className="min-h-[calc(100vh-4rem)]">{children}</main>
+          <Toaster />
+        </body>
+      </html>
+    </AuthProvider>
   );
 }
