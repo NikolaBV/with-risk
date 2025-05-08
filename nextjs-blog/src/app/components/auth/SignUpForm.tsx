@@ -13,18 +13,24 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/app/components/ui/card";
-import { Alert, AlertDescription } from "../ui/alert";
-import { Input } from "../ui/input";
-import { Button } from "../ui/button";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+} from "@/components/ui/card";
+import { Alert, AlertDescription } from "../../../components/ui/alert";
+import { Input } from "../../../components/ui/input";
+import { Button } from "../../../components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { useRouter } from "next/navigation";
 
 export default function SignUpForm() {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const { signUp, isLoading } = useAuth();
-
 
   const form = useForm<z.infer<typeof signUpSchema>>({
     resolver: zodResolver(signUpSchema),

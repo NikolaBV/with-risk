@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Button } from "@/app/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { Icons } from "./ui/icons";
 import {
   DropdownMenu,
@@ -13,7 +13,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "../app/components/ui/dropdown-menu";
+} from "./ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "./ui/avatar";
 
 export function Navbar() {

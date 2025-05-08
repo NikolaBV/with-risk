@@ -7,7 +7,7 @@ import {
   CardContent,
   CardDescription,
   CardTitle,
-} from "@/app/components/ui/card";
+} from "@/components/ui/card";
 
 interface PostListItemProps {
   post: Post;
