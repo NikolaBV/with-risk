@@ -8,7 +8,7 @@ import { Card, CardContent } from "../../components/ui/card";
 import { Input } from "../../components/ui/input";
 import { Button } from "../../components/ui/button";
 import { Icons } from "@/components/ui/icons";
-import { Label } from "@radix-ui/react-dropdown-menu";
+import { Label } from "@/components/ui/label";
 
 export default function AuthPage() {
   const [email, setEmail] = useState("");
