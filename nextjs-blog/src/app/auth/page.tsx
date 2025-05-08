@@ -65,9 +65,7 @@ export default function AuthPage() {
             <h1 className="text-2xl font-semibold tracking-tight">
               Welcome back
             </h1>
-            <p className="text-sm text-muted-foreground">
-              Enter your credentials to sign in to your account
-            </p>
+            <p className="text-sm text-muted-foreground"></p>
           </div>
           <Card>
             <CardContent className="pt-6">
