@@ -1,4 +1,3 @@
-// prisma/schema.prisma
 generator client {
   provider = "prisma-client-js"
 }
@@ -16,6 +15,8 @@ model Post {
   publishedAt DateTime?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+  
+  comments    Comment[]
 }
 
 model User {
@@ -26,8 +27,23 @@ model User {
   profileImage  String?
   name          String?
   createdAt     DateTime  @default(now())
-  updatedAt     DateTime?  @updatedAt
+  updatedAt     DateTime? @updatedAt
   role          UserRole  @default(USER)
+  
+  comments      Comment[]
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id])
+  
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
 }
 
 enum UserRole {
