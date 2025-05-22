@@ -10,6 +10,8 @@ import CommentList from "./CommentList";
 import LikeButton from "./LikeButton";
 import { PortableTextBlock } from "@portabletext/types";
 import SanityImage from "@/app/components/blog/SanityImage";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { ViewCounter } from "./ViewCounter";
 
 interface PostContentProps {
   post: Post & { id: string };
@@ -58,74 +60,72 @@ export default function PostContent({ post, imageUrl }: PostContentProps) {
   };
 
   return (
-    <article className="prose prose-lg mx-auto px-4 py-8">
-      <Link
-        href="/"
-        className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 mb-8"
-      >
-        ← Back to posts
-      </Link>
-
-      <div className="flex items-center justify-between mb-8">
-        <div className="flex items-center gap-4">
-          {post.author?.image && (
-            <div className="relative w-10 h-10">
-              <Image
-                src={post.author.image}
-                alt={post.author.name || "Author"}
-                fill
-                className="rounded-full object-cover"
-                sizes="40px"
-              />
+    <main className="container mx-auto px-4 py-8 max-w-4xl">
+      <article className="prose lg:prose-xl mx-auto">
+        <div className="flex justify-between items-center mb-8">
+          <div className="flex items-center gap-4">
+            <Avatar className="h-12 w-12">
+              {post.author?.image ? (
+                <AvatarImage
+                  src={post.author.image}
+                  alt={post.author.name || "Author"}
+                />
+              ) : (
+                <AvatarFallback>
+                  {post.author?.name?.[0] || "A"}
+                </AvatarFallback>
+              )}
+            </Avatar>
+            <div>
+              <h1 className="text-4xl font-bold mb-2">{post.title}</h1>
+              <p className="text-gray-600">
+                By {post.author?.name || "Unknown"} •{" "}
+                {post.publishedAt
+                  ? new Date(post.publishedAt).toLocaleDateString()
+                  : "Draft"}
+              </p>
             </div>
-          )}
-          <div>
-            <p className="text-sm text-gray-600">
-              {post.author?.name || "Anonymous"}
-            </p>
-            <p className="text-sm text-gray-500">
-              {post.publishedAt
-                ? new Date(post.publishedAt).toLocaleDateString()
-                : "Draft"}
-            </p>
+          </div>
+          <div className="flex items-center gap-4">
+            <ViewCounter postId={post.id} />
+            <LikeButton postId={post.id} />
           </div>
         </div>
-        <LikeButton postId={post.id} />
-      </div>
 
-      {imageUrl && (
-        <div className="relative w-full h-[400px] mb-8">
-          <Image
-            src={imageUrl}
-            alt={post.title || "Post image"}
-            fill
-            className="object-cover rounded-lg"
-            priority
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          />
-        </div>
-      )}
-
-      <h1>{post.title}</h1>
-      {post.body && (
-        <div className="prose">
-          <PortableText value={post.body as PortableTextBlock[]} components={components} />
-        </div>
-      )}
-
-      <div className="mt-16">
-        <h2 className="text-2xl font-bold mb-8">Comments</h2>
-        <CommentForm postId={post.id} onCommentAdded={fetchComments} />
-        {isLoading ? (
-          <p>Loading comments...</p>
-        ) : (
-          <CommentList
-            comments={comments}
-            postId={post.id}
-            onCommentUpdated={fetchComments}
-          />
+        {imageUrl && (
+          <div className="relative w-full h-[400px] mb-8">
+            <Image
+              src={imageUrl}
+              alt={post.title || "Post image"}
+              fill
+              className="object-cover rounded-lg"
+              priority
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            />
+          </div>
         )}
-      </div>
-    </article>
+
+        <h1>{post.title}</h1>
+        {post.body && (
+          <div className="prose">
+            <PortableText value={post.body as PortableTextBlock[]} components={components} />
+          </div>
+        )}
+
+        <div className="mt-16">
+          <h2 className="text-2xl font-bold mb-8">Comments</h2>
+          <CommentForm postId={post.id} onCommentAdded={fetchComments} />
+          {isLoading ? (
+            <p>Loading comments...</p>
+          ) : (
+            <CommentList
+              comments={comments}
+              postId={post.id}
+              onCommentUpdated={fetchComments}
+            />
+          )}
+        </div>
+      </article>
+    </main>
   );
 }

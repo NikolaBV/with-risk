@@ -19,6 +19,7 @@ model Post {
   
   comments    Comment[]
   likes       Like[]
+  views       View[]
 }
 
 model User {
@@ -34,6 +35,7 @@ model User {
   
   comments      Comment[]
   likes         Like[]
+  views         View[]
 }
 
 model Comment {
@@ -52,6 +54,20 @@ model Comment {
 model Like {
   id        String   @id @default(uuid())
   createdAt DateTime @default(now())
+  
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id])
+  
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([postId, userId])
+}
+
+model View {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  lastViewAt DateTime @default(now())
   
   postId    String
   post      Post     @relation(fields: [postId], references: [id])
