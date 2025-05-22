@@ -26,6 +26,7 @@ export interface Author {
 }
 
 export interface Post extends SanityDocument {
+  id?: string; // Database ID
   title?: string;
   publishedAt?: string;
   body?: PortableTextBlock[];
