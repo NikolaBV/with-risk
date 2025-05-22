@@ -1,23 +1,26 @@
 "use client";
 
-import { PortableText } from "next-sanity";
+import { useState, useEffect } from "react";
+import { PortableText } from "@portabletext/react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import type { Post } from "../../../types/sanity";
-import SanityImage from "../../components/blog/SanityImage";
-import { getPostImageUrl } from "../../../lib/sanity/image";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import Image from "next/image";
+import { Post, SanityImageValue } from "@/types/sanity";
 import CommentForm from "./CommentForm";
 import CommentList from "./CommentList";
+import LikeButton from "./LikeButton";
+import { PortableTextBlock } from "@portabletext/types";
+import SanityImage from "@/app/components/blog/SanityImage";
 
 interface PostContentProps {
-  post: Post;
+  post: Post & { id: string };
+  imageUrl?: string;
 }
 
 interface Comment {
   id: string;
   content: string;
   createdAt: string;
+  userId: string;
   user: {
     username: string;
     profileImage: string | null;
@@ -25,10 +28,21 @@ interface Comment {
   };
 }
 
-export default function PostContent({ post }: PostContentProps) {
-  const postImageUrl = getPostImageUrl(post, { width: 550, height: 310 });
+const components = {
+  types: {
+    image: ({ value }: { value: SanityImageValue }) => {
+      return <SanityImage value={value} />;
+    },
+  },
+};
+
+export default function PostContent({ post, imageUrl }: PostContentProps) {
   const [comments, setComments] = useState<Comment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    fetchComments();
+  }, [post.id]);
 
   const fetchComments = async () => {
     try {
@@ -43,78 +57,75 @@ export default function PostContent({ post }: PostContentProps) {
     }
   };
 
-  useEffect(() => {
-    fetchComments();
-  }, [post.id]);
-
-  const portableTextComponents = {
-    types: {
-      image: SanityImage,
-    },
-  };
-
   return (
-    <div>
-      <main className="container mx-auto min-h-screen max-w-3xl p-8 flex flex-col gap-4">
-        <Link href="/" className="hover:underline">
-          ← Back to posts
-        </Link>
+    <article className="prose prose-lg mx-auto px-4 py-8">
+      <Link
+        href="/"
+        className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 mb-8"
+      >
+        ← Back to posts
+      </Link>
 
-        {postImageUrl && (
-          <img
-            src={postImageUrl}
-            alt={post.title || "Post image"}
-            className="aspect-video rounded-xl"
-            width="550"
-            height="310"
-          />
-        )}
-
-        <h1 className="text-4xl font-bold mb-8">
-          {post.title || "Untitled Post"}
-        </h1>
-
-        <div className="prose max-w-none">
-          {post.publishedAt && (
-            <p>Published: {new Date(post.publishedAt).toLocaleDateString()}</p>
+      <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center gap-4">
+          {post.author?.image && (
+            <div className="relative w-10 h-10">
+              <Image
+                src={post.author.image}
+                alt={post.author.name || "Author"}
+                fill
+                className="rounded-full object-cover"
+                sizes="40px"
+              />
+            </div>
           )}
-
-          {Array.isArray(post.body) && post.body.length > 0 ? (
-            <PortableText
-              value={post.body}
-              components={portableTextComponents}
-            />
-          ) : (
-            <p>No content available for this post.</p>
-          )}
-
-          <div className="mt-10 border-t pt-6">
-            <h2 className="font-bold text-xl mb-6">
-              Comments ({comments.length})
-            </h2>
-
-            <CommentForm postId={post.id} onCommentAdded={fetchComments} />
-
-            {isLoading ? (
-              <div className="text-center py-4">
-                <p className="text-gray-500">Loading comments...</p>
-              </div>
-            ) : comments.length > 0 ? (
-              <div className="mt-6">
-                <CommentList
-                  comments={comments}
-                  postId={post.id}
-                  onCommentUpdated={fetchComments}
-                />
-              </div>
-            ) : (
-              <div className="text-center py-4">
-                <p className="text-gray-500">No comments yet. Be the first to comment!</p>
-              </div>
-            )}
+          <div>
+            <p className="text-sm text-gray-600">
+              {post.author?.name || "Anonymous"}
+            </p>
+            <p className="text-sm text-gray-500">
+              {post.publishedAt
+                ? new Date(post.publishedAt).toLocaleDateString()
+                : "Draft"}
+            </p>
           </div>
         </div>
-      </main>
-    </div>
+        <LikeButton postId={post.id} />
+      </div>
+
+      {imageUrl && (
+        <div className="relative w-full h-[400px] mb-8">
+          <Image
+            src={imageUrl}
+            alt={post.title || "Post image"}
+            fill
+            className="object-cover rounded-lg"
+            priority
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          />
+        </div>
+      )}
+
+      <h1>{post.title}</h1>
+      {post.body && (
+        <div className="prose">
+          <PortableText value={post.body as PortableTextBlock[]} components={components} />
+        </div>
+      )}
+
+      <div className="mt-16">
+        <h2 className="text-2xl font-bold mb-8">Comments</h2>
+        <CommentForm postId={post.id} onCommentAdded={fetchComments} />
+        {isLoading ? (
+          <p>Loading comments...</p>
+        ) : (
+          <CommentList
+            comments={comments}
+            postId={post.id}
+            onCommentUpdated={fetchComments}
+          />
+        )}
+      </div>
+    </article>
   );
 }

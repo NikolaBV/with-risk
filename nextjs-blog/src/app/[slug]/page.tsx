@@ -8,7 +8,18 @@ import PostContent from "./components/PostContent";
 import { syncPostFromSanity } from "@/lib/services/postSync";
 
 // Simplified query to get everything
-const POST_QUERY = `*[_type == "post" && slug.current == $slug][0]`;
+const POST_QUERY = `*[_type == "post" && slug.current == $slug][0]{
+  _id,
+  title,
+  slug,
+  publishedAt,
+  body,
+  mainImage,
+  author->{
+    name,
+    image
+  }
+}`;
 
 const { projectId, dataset } = client.config();
 
@@ -59,62 +70,18 @@ export default async function PostPage({ params }) {
     );
   }
 
-  // Inspect the post structure to find the image field
-  console.log("Full post data:", post);
-
-  // Let's try various possible image field names and structures
-  let postImageUrl: string | null = null;
-  let imageField = null;
-
-  // Common field names for images in Sanity schemas
-  const possibleImageFields = [
-    "mainImage",
-    "image",
-    "coverImage",
-    "thumbnail",
-    "featuredImage",
-  ];
-
-  // Try to find an image field
-  for (const fieldName of possibleImageFields) {
-    if (post[fieldName]) {
-      imageField = post[fieldName];
-      console.log(`Found image field: ${fieldName}`, imageField);
-      break;
+  // Generate image URL if mainImage exists
+  let postImageUrl: string | undefined = undefined;
+  if (post.mainImage) {
+    const imageBuilder = urlFor(post.mainImage);
+    if (imageBuilder) {
+      postImageUrl = imageBuilder.width(1200).height(630).url();
     }
   }
 
-  // Try to generate URL if we found an image field
-  if (imageField) {
-    try {
-      // Handle different structures
-      if (
-        imageField._type === "image" &&
-        imageField.asset &&
-        imageField.asset._ref
-      ) {
-        // Standard Sanity image reference
-        const imageBuilder = urlFor(imageField);
-        if (imageBuilder) {
-          postImageUrl = imageBuilder.width(550).height(310).url();
-        }
-      } else if (
-        typeof imageField === "string" &&
-        imageField.startsWith("http")
-      ) {
-        // Direct URL string
-        postImageUrl = imageField;
-      } else {
-        // Try the general approach
-        const imageBuilder = urlFor(imageField);
-        if (imageBuilder) {
-          postImageUrl = imageBuilder.width(550).height(310).url();
-        }
-      }
-    } catch (error) {
-      console.error("Error generating image URL:", error);
-    }
-  }
-
-  return <PostContent post={{ ...post, id: syncedPost.id, imageUrl: postImageUrl }} />;
+  return (
+    <main className="container mx-auto min-h-screen max-w-3xl p-8">
+      <PostContent post={{ ...post, id: syncedPost.id }} imageUrl={postImageUrl} />
+    </main>
+  );
 }

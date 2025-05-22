@@ -22,6 +22,7 @@ export interface Slug {
 
 export interface Author {
   name: string;
+  image?: string;
   [key: string]: unknown; // For any additional properties
 }
 
