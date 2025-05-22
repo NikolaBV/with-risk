@@ -1,5 +1,6 @@
 import SignInForm from "@/app/components/auth/SignInForm";
 import { Metadata } from "next";
+import { Suspense } from "react";
 
 export const metadata: Metadata = {
   title: "Sign In - My Blog",
@@ -9,7 +10,9 @@ export const metadata: Metadata = {
 export default function SignInPage() {
   return (
     <div className="container mx-auto">
-      <SignInForm />
+      <Suspense fallback={<div>Loading...</div>}>
+        <SignInForm />
+      </Suspense>
     </div>
   );
 }

@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { PortableText } from "@portabletext/react";
-import Link from "next/link";
 import Image from "next/image";
 import { Post, SanityImageValue } from "@/types/sanity";
 import CommentForm from "./CommentForm";
@@ -42,11 +41,7 @@ export default function PostContent({ post, imageUrl }: PostContentProps) {
   const [comments, setComments] = useState<Comment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    fetchComments();
-  }, [post.id]);
-
-  const fetchComments = async () => {
+  const fetchComments = useCallback(async () => {
     try {
       const response = await fetch(`/api/comments?postId=${post.id}`);
       if (!response.ok) throw new Error("Failed to fetch comments");
@@ -57,7 +52,11 @@ export default function PostContent({ post, imageUrl }: PostContentProps) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [post.id]);
+
+  useEffect(() => {
+    fetchComments();
+  }, [fetchComments]);
 
   return (
     <main className="container mx-auto px-4 py-8 max-w-4xl">

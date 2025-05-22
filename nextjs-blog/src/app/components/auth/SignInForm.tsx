@@ -55,8 +55,9 @@ export default function SignInForm() {
 
       // Force a hard navigation to ensure the session is properly set
       window.location.href = redirectTo;
-    } catch (error: any) {
-      toast.error(error.message || "Sign in failed");
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "Sign in failed";
+      toast.error(errorMessage);
     }
   };
 
@@ -116,7 +117,7 @@ export default function SignInForm() {
           </form>
         </Form>
         <div className="mt-4 text-center text-sm">
-          Don't have an account?{" "}
+          Don&apos;t have an account?{" "}
           <Link href="/auth/signup" className="text-primary hover:underline">
             Sign Up
           </Link>

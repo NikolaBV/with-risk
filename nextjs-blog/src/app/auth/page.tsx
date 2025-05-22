@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { toast } from "sonner";
 import { Card, CardContent } from "../../components/ui/card";
 import { Input } from "../../components/ui/input";
@@ -32,8 +33,9 @@ export default function AuthPage() {
       toast.success("Signed in successfully!");
       router.push("/dashboard");
       router.refresh();
-    } catch (error: any) {
-      toast.error(error.message);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "An error occurred";
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -113,19 +115,19 @@ export default function AuthPage() {
           </Card>
           <p className="px-8 text-center text-sm text-muted-foreground">
             By clicking continue, you agree to our{" "}
-            <a
+            <Link
               href="/terms"
               className="underline underline-offset-4 hover:text-primary"
             >
               Terms of Service
-            </a>{" "}
+            </Link>{" "}
             and{" "}
-            <a
+            <Link
               href="/privacy"
               className="underline underline-offset-4 hover:text-primary"
             >
               Privacy Policy
-            </a>
+            </Link>
             .
           </p>
         </div>

@@ -6,7 +6,7 @@ import { getUserProfile, updateUserProfile } from "@/lib/services/userService";
 import { profileSchema } from "@/lib/validations/auth";
 
 // GET /api/user/profile - Get current user profile
-export async function GET(req: NextRequest) {
+export async function GET() {
   const supabase = createRouteHandlerClient({ cookies });
 
   try {

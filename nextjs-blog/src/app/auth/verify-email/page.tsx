@@ -20,7 +20,7 @@ export default function VerifyEmailPage() {
       <CardHeader>
         <CardTitle className="text-2xl text-center">Check Your Email</CardTitle>
         <CardDescription className="text-center">
-          We've sent you a verification link
+          We&apos;ve sent you a verification link
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4 text-center">
@@ -29,7 +29,7 @@ export default function VerifyEmailPage() {
           your registration.
         </p>
         <p className="text-sm text-gray-500">
-          If you don't see the email, check your spam folder.
+          If you don&apos;t see the email, check your spam folder.
         </p>
         <div className="pt-4">
           <Link href="/auth/signin">

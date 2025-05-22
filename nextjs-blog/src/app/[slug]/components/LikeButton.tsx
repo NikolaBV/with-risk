@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Heart } from "lucide-react";
@@ -29,13 +29,7 @@ export default function LikeButton({ postId }: LikeButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [likeData, setLikeData] = useState<LikeData | null>(null);
 
-  useEffect(() => {
-    if (session?.user?.id) {
-      fetchLikes();
-    }
-  }, [session?.user?.id, postId]);
-
-  const fetchLikes = async () => {
+  const fetchLikes = useCallback(async () => {
     try {
       const response = await fetch(`/api/posts/${postId}/like`);
       if (!response.ok) throw new Error("Failed to fetch likes");
@@ -44,7 +38,13 @@ export default function LikeButton({ postId }: LikeButtonProps) {
     } catch (error) {
       console.error("Error fetching likes:", error);
     }
-  };
+  }, [postId]);
+
+  useEffect(() => {
+    if (session?.user?.id) {
+      fetchLikes();
+    }
+  }, [session?.user?.id, fetchLikes]);
 
   const handleLike = async () => {
     if (!session?.user?.id) {

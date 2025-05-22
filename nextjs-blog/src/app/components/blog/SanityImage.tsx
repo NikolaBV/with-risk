@@ -1,5 +1,6 @@
 import type { SanityImageValue } from "../../../types/sanity";
 import { urlFor } from "../../../lib/sanity/image";
+import Image from "next/image";
 
 interface SanityImageProps {
   value: SanityImageValue;
@@ -22,12 +23,16 @@ export default function SanityImage({
     return null;
   }
 
+  const imageUrl = imageBuilder.width(width).auto("format").url();
+
   return (
     <figure className="my-8">
-      <img
-        src={imageBuilder.width(width).auto("format").url()}
+      <Image
+        src={imageUrl}
         alt={value.alt || ""}
         className={className}
+        width={width}
+        height={Math.round(width * 0.5625)} // 16:9 aspect ratio
         loading="lazy"
       />
       {value.caption && (

@@ -18,9 +18,10 @@ interface Like {
 // GET /api/posts/[postId]/like
 export async function GET(
   request: Request,
-  { params }: { params: { postId: string } }
+  { params }: { params: Promise<{ postId: string }> }
 ) {
   try {
+    const { postId } = await params;
     const cookieStore = cookies();
     const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
     
@@ -35,7 +36,7 @@ export async function GET(
         u.username, u."profileImage", u.name
       FROM "Like" l
       JOIN "User" u ON l."userId" = u.id
-      WHERE l."postId" = ${params.postId}
+      WHERE l."postId" = ${postId}
     `;
 
     const userLike = likes.find((like: Like) => like.userId === session.user.id);
@@ -57,9 +58,10 @@ export async function GET(
 // POST /api/posts/[postId]/like
 export async function POST(
   request: Request,
-  { params }: { params: { postId: string } }
+  { params }: { params: Promise<{ postId: string }> }
 ) {
   try {
+    const { postId } = await params;
     const cookieStore = cookies();
     const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
     
@@ -72,7 +74,7 @@ export async function POST(
     // Check if user already liked the post
     const existingLike = await prisma.$queryRaw<Like[]>`
       SELECT * FROM "Like"
-      WHERE "postId" = ${params.postId}
+      WHERE "postId" = ${postId}
       AND "userId" = ${session.user.id}
     `;
 
@@ -88,7 +90,7 @@ export async function POST(
           u.username, u."profileImage", u.name
         FROM "Like" l
         JOIN "User" u ON l."userId" = u.id
-        WHERE l."postId" = ${params.postId}
+        WHERE l."postId" = ${postId}
       `;
 
       return NextResponse.json({
@@ -101,7 +103,7 @@ export async function POST(
     // Like the post
     await prisma.$executeRaw`
       INSERT INTO "Like" ("id", "postId", "userId", "createdAt")
-      VALUES (gen_random_uuid(), ${params.postId}, ${session.user.id}, NOW())
+      VALUES (gen_random_uuid(), ${postId}, ${session.user.id}, NOW())
     `;
 
     const updatedLikes = await prisma.$queryRaw<Like[]>`
@@ -109,7 +111,7 @@ export async function POST(
         u.username, u."profileImage", u.name
       FROM "Like" l
       JOIN "User" u ON l."userId" = u.id
-      WHERE l."postId" = ${params.postId}
+      WHERE l."postId" = ${postId}
     `;
 
     return NextResponse.json({
@@ -124,4 +126,4 @@ export async function POST(
       { status: 500 }
     );
   }
-} 
+}

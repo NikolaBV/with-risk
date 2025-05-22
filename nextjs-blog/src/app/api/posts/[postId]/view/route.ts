@@ -6,9 +6,11 @@ import { cookies } from "next/headers";
 // GET /api/posts/[postId]/view
 export async function GET(
   request: Request,
-  { params }: { params: { postId: string } }
+  { params }: { params: Promise<{ postId: string }> }
 ) {
-  if (!params.postId) {
+  const { postId } = await params;
+  
+  if (!postId) {
     console.error("Missing postId parameter");
     return NextResponse.json(
       { error: "Post ID is required" },
@@ -19,11 +21,11 @@ export async function GET(
   try {
     // First check if the post exists
     const post = await prisma.post.findUnique({
-      where: { id: params.postId },
+      where: { id: postId },
     });
 
     if (!post) {
-      console.error(`Post not found: ${params.postId}`);
+      console.error(`Post not found: ${postId}`);
       return NextResponse.json(
         { error: "Post not found" },
         { status: 404 }
@@ -44,7 +46,7 @@ export async function GET(
     const views = await prisma.$queryRaw<{ count: number }[]>`
       SELECT COUNT(*) as count
       FROM "View"
-      WHERE "postId" = ${params.postId}
+      WHERE "postId" = ${postId}
     `;
 
     console.log("View count query result:", views); // Debug log
@@ -62,9 +64,11 @@ export async function GET(
 // POST /api/posts/[postId]/view
 export async function POST(
   request: Request,
-  { params }: { params: { postId: string } }
+  { params }: { params: Promise<{ postId: string }> }
 ) {
-  if (!params.postId) {
+  const { postId } = await params;
+  
+  if (!postId) {
     console.error("Missing postId parameter");
     return NextResponse.json(
       { error: "Post ID is required" },
@@ -85,11 +89,11 @@ export async function POST(
 
     // Check if the post exists
     const post = await prisma.post.findUnique({
-      where: { id: params.postId },
+      where: { id: postId },
     });
 
     if (!post) {
-      console.error(`Post not found: ${params.postId}`);
+      console.error(`Post not found: ${postId}`);
       return NextResponse.json(
         { error: "Post not found" },
         { status: 404 }
@@ -100,7 +104,7 @@ export async function POST(
     const existingView = await prisma.$queryRaw<{ lastViewAt: Date }[]>`
       SELECT "lastViewAt"
       FROM "View"
-      WHERE "postId" = ${params.postId}
+      WHERE "postId" = ${postId}
       AND "userId" = ${session.user.id}
     `;
 
@@ -115,7 +119,7 @@ export async function POST(
         const views = await prisma.$queryRaw<{ count: number }[]>`
           SELECT COUNT(*) as count
           FROM "View"
-          WHERE "postId" = ${params.postId}
+          WHERE "postId" = ${postId}
         `;
         
         return NextResponse.json({ 
@@ -128,14 +132,14 @@ export async function POST(
       await prisma.$executeRaw`
         UPDATE "View"
         SET "lastViewAt" = NOW()
-        WHERE "postId" = ${params.postId}
+        WHERE "postId" = ${postId}
         AND "userId" = ${session.user.id}
       `;
     } else {
       // Create a new view record
       await prisma.$executeRaw`
         INSERT INTO "View" ("id", "postId", "userId", "createdAt", "lastViewAt")
-        VALUES (gen_random_uuid(), ${params.postId}, ${session.user.id}, NOW(), NOW())
+        VALUES (gen_random_uuid(), ${postId}, ${session.user.id}, NOW(), NOW())
       `;
     }
 
@@ -143,7 +147,7 @@ export async function POST(
     const views = await prisma.$queryRaw<{ count: number }[]>`
       SELECT COUNT(*) as count
       FROM "View"
-      WHERE "postId" = ${params.postId}
+      WHERE "postId" = ${postId}
     `;
 
     return NextResponse.json({ 
@@ -157,4 +161,4 @@ export async function POST(
       { status: 500 }
     );
   }
-} 
+}

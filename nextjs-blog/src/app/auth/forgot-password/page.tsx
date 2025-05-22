@@ -67,10 +67,11 @@ export default function ForgotPasswordPage() {
         description: "Check your email for a password reset link",
         duration: 5000,
       });
-    } catch (error: any) {
-      setError(error.message || "Something went wrong");
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "Something went wrong";
+      setError(errorMessage);
       toast.error("Reset failed", {
-        description: error.message || "Something went wrong",
+        description: errorMessage,
         duration: 5000,
       });
     } finally {
@@ -90,9 +91,9 @@ export default function ForgotPasswordPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4 text-center">
-          <p>We've sent password reset instructions to your email address.</p>
+          <p>We&apos;ve sent password reset instructions to your email address.</p>
           <p className="text-sm text-gray-500">
-            If you don't see the email, check your spam folder.
+            If you don&apos;t see the email, check your spam folder.
           </p>
           <div className="pt-4">
             <Link href="/auth/signin">

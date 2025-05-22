@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { createClientComponentClient, User } from "@supabase/auth-helpers-nextjs";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
@@ -16,7 +16,7 @@ import { Icons } from "@/components/ui/icons";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 export default function DashboardPage() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const supabase = createClientComponentClient();
@@ -48,8 +48,9 @@ export default function DashboardPage() {
       await supabase.auth.signOut();
       toast.success("Signed out successfully!");
       router.push("/auth");
-    } catch (error: any) {
-      toast.error(error.message);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to sign out";
+      toast.error(errorMessage);
     }
   };
 
@@ -114,7 +115,7 @@ export default function DashboardPage() {
                   Last Sign In
                 </p>
                 <p className="text-sm">
-                  {new Date(user?.last_sign_in_at).toLocaleString()}
+                  {user?.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleString() : "Never"}
                 </p>
               </div>
             </CardContent>
@@ -174,7 +175,7 @@ export default function DashboardPage() {
                   <div>
                     <p className="text-sm font-medium">Last Sign In</p>
                     <p className="text-xs text-muted-foreground">
-                      {new Date(user?.last_sign_in_at).toLocaleString()}
+                      {user?.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleString() : "Never"}
                     </p>
                   </div>
                 </div>

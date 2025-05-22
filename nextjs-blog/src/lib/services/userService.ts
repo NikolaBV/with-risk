@@ -1,4 +1,3 @@
-import { createClient } from "@supabase/supabase-js";
 import { prisma } from "../prisma";
 import { supabase } from "../supabase";
 
@@ -33,7 +32,9 @@ export async function updateUserProfile(
 ): Promise<UserProfile | null> {
   try {
     // Don't allow updating id or email through this function
-    const { id, email, ...updateData } = data;
+    const updateData = { ...data };
+    delete updateData.id;
+    delete updateData.email;
 
     return await prisma.user.update({
       where: { id: userId },
@@ -80,17 +81,6 @@ export async function uploadProfileImage(
 
 export async function deleteUser(userId: string): Promise<boolean> {
   try {
-    // Create admin client with service role key
-    const adminAuthClient = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL as string,
-      process.env.SUPABASE_SERVICE_ROLE_KEY as string
-    );
-
-    // Delete user from Supabase Auth using admin client
-    const { error } = await adminAuthClient.auth.admin.deleteUser(userId);
-
-    if (error) throw error;
-
     // Prisma will handle cascading deletes based on your schema
     await prisma.user.delete({ where: { id: userId } });
 
