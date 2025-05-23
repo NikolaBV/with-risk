@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { createClientComponentClient, User } from "@supabase/auth-helpers-nextjs";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -18,6 +18,7 @@ import {
 
 export function Navbar() {
   const router = useRouter();
+  const pathname = usePathname();
   const supabase = createClientComponentClient();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -70,7 +71,7 @@ export function Navbar() {
   return (
     <nav className="border-b bg-background">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-8">
           <Button
             variant="ghost"
             className="text-xl font-bold"
@@ -78,6 +79,32 @@ export function Navbar() {
           >
             WithRisk
           </Button>
+          {user && (
+            <div className="hidden md:flex space-x-4">
+              <Button
+                variant="ghost"
+                className={`${
+                  pathname === '/posts'
+                    ? 'bg-accent text-accent-foreground'
+                    : 'hover:bg-accent hover:text-accent-foreground'
+                }`}
+                onClick={() => router.push('/posts')}
+              >
+                Posts
+              </Button>
+              <Button
+                variant="ghost"
+                className={`${
+                  pathname === '/users'
+                    ? 'bg-accent text-accent-foreground'
+                    : 'hover:bg-accent hover:text-accent-foreground'
+                }`}
+                onClick={() => router.push('/users')}
+              >
+                Users
+              </Button>
+            </div>
+          )}
         </div>
 
         <div className="flex items-center space-x-4">

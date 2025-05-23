@@ -4,7 +4,6 @@ import "./globals.css";
 import { Toaster } from "sonner";
 import { Navbar } from "@/components/Navbar";
 import { AuthProvider } from "@/context/AuthContext";
-import { SessionProvider } from "@/components/providers/SessionProvider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -21,13 +20,11 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className={inter.className}>
-        <SessionProvider>
-          <AuthProvider>
-            <Navbar />
-            <main className="min-h-[calc(100vh-4rem)]">{children}</main>
-            <Toaster />
-          </AuthProvider>
-        </SessionProvider>
+        <AuthProvider>
+          <Navbar />
+          <main className="min-h-[calc(100vh-4rem)]">{children}</main>
+          <Toaster />
+        </AuthProvider>
       </body>
     </html>
   );
