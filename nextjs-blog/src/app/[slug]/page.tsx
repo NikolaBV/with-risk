@@ -34,11 +34,14 @@ function urlFor(source: SanityImageSource): ImageUrlBuilder | null {
 
 const options = { next: { revalidate: 30 } };
 
-// @ts-expect-error - Bypassing type checking due to environment differences
-export default async function PostPage({ params }) {
-  // Handle params directly without worrying about type
-  const slug = params?.slug || "";
-  const decodedSlug = decodeURIComponent(slug);
+export default async function PostPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const safeSlug = slug || "";
+  const decodedSlug = decodeURIComponent(safeSlug);
 
   const post = await client.fetch<SanityDocument>(
     POST_QUERY,
