@@ -17,9 +17,9 @@ interface User {
   profileImage: string | null;
   role: 'USER' | 'ADMIN';
   createdAt: string;
-  comments: any[];
-  likes: any[];
-  views: any[];
+  comments: unknown[];
+  likes: unknown[];
+  views: unknown[];
 }
 
 interface PaginationData {

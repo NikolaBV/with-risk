@@ -13,9 +13,9 @@ interface Post {
   slug: string;
   publishedAt: string;
   createdAt: string;
-  comments: any[];
-  likes: any[];
-  views: any[];
+  comments: unknown[];
+  likes: unknown[];
+  views: unknown[];
 }
 
 interface PaginationData {
