@@ -34,7 +34,6 @@ export async function GET(request: Request) {
     console.error("Error fetching comments:", error);
     return NextResponse.json(
       { error: "Failed to fetch comments" },
-      { status: 500 }
     );
   }
 }
@@ -62,6 +61,25 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
+
+    // Ensure the related User exists to satisfy the required relation
+    // This avoids Prisma "Inconsistent query result" when including the user
+    const supaUser = session.user;
+    const fallbackUsername =
+      (supaUser.user_metadata && (supaUser.user_metadata.username || supaUser.user_metadata.preferred_username)) ||
+      (supaUser.email ? supaUser.email.split('@')[0] : `user_${supaUser.id.slice(0, 8)}`);
+
+    await prisma.user.upsert({
+      where: { id: supaUser.id },
+      update: {},
+      create: {
+        id: supaUser.id,
+        email: supaUser.email ?? `${supaUser.id}@placeholder.local`,
+        username: fallbackUsername,
+        name: (supaUser.user_metadata && (supaUser.user_metadata.full_name || supaUser.user_metadata.name)) || null,
+        profileImage: (supaUser.user_metadata && (supaUser.user_metadata.avatar_url || supaUser.user_metadata.picture)) || null,
+      },
+    });
 
     const comment = await prisma.comment.create({
       data: {
