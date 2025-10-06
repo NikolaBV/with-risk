@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+{{ ... }}
 import { prisma } from "@/lib/prisma";
 import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
@@ -20,9 +20,7 @@ export async function GET(
 
   try {
     // First check if the post exists
-    const post = await prisma.post.findUnique({
-      where: { id: postId },
-    });
+    const post = await prisma.post.findUnique({ where: { id: postId } });
 
     if (!post) {
       console.error(`Post not found: ${postId}`);
@@ -32,26 +30,9 @@ export async function GET(
       );
     }
 
-    console.log("Post found:", post.id); // Debug log
-
-    // Test database connection
-    try {
-      await prisma.$queryRaw`SELECT 1`;
-      console.log("Database connection successful"); // Debug log
-    } catch (error) {
-      console.error("Database connection test failed:", error);
-      throw new Error("Database connection failed");
-    }
-
-    const views = await prisma.$queryRaw<{ count: number }[]>`
-      SELECT COUNT(*) as count
-      FROM "View"
-      WHERE "postId" = ${postId}
-    `;
-
-    console.log("View count query result:", views); // Debug log
-
-    return NextResponse.json({ viewCount: Number(views[0].count) });
+    // Use Prisma client to count views
+    const count = await prisma.view.count({ where: { postId } });
+    return NextResponse.json({ viewCount: count });
   } catch (error) {
     console.error("Error in GET /api/posts/[postId]/view:", error);
     return NextResponse.json(
@@ -64,13 +45,7 @@ export async function GET(
 // POST /api/posts/[postId]/view
 export async function POST(
   request: Request,
-  { params }: { params: Promise<{ postId: string }> }
-) {
-  const { postId } = await params;
-  
-  if (!postId) {
-    console.error("Missing postId parameter");
-    return NextResponse.json(
+{{ ... }}
       { error: "Post ID is required" },
       { status: 400 }
     );
@@ -86,74 +61,45 @@ export async function POST(
       console.error("Unauthorized: No user session");
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
-    // Check if the post exists
-    const post = await prisma.post.findUnique({
-      where: { id: postId },
-    });
-
-    if (!post) {
-      console.error(`Post not found: ${postId}`);
-      return NextResponse.json(
+{{ ... }}
         { error: "Post not found" },
         { status: 404 }
       );
     }
 
     // Check if user has viewed the post recently (within last 30 minutes)
-    const existingView = await prisma.$queryRaw<{ lastViewAt: Date }[]>`
-      SELECT "lastViewAt"
-      FROM "View"
-      WHERE "postId" = ${postId}
-      AND "userId" = ${session.user.id}
-    `;
+    const compositeKey = { postId_userId: { postId, userId: session.user.id } } as const;
+    const existing = await prisma.view.findUnique({
+      where: compositeKey,
+      select: { lastViewAt: true },
+    });
 
     const now = new Date();
     const thirtyMinutesAgo = new Date(now.getTime() - 30 * 60 * 1000);
 
-    if (existingView.length > 0) {
-      const lastViewAt = new Date(existingView[0].lastViewAt);
-      
-      // If the last view was less than 30 minutes ago, don't count it
+    if (existing?.lastViewAt) {
+      const lastViewAt = new Date(existing.lastViewAt);
       if (lastViewAt > thirtyMinutesAgo) {
-        const views = await prisma.$queryRaw<{ count: number }[]>`
-          SELECT COUNT(*) as count
-          FROM "View"
-          WHERE "postId" = ${postId}
-        `;
-        
-        return NextResponse.json({ 
-          viewCount: Number(views[0].count),
-          message: "View not counted (too soon)" 
-        });
+        const count = await prisma.view.count({ where: { postId } });
+        return NextResponse.json({ viewCount: count, message: "View not counted (too soon)" });
       }
 
-      // Update the lastViewAt timestamp
-      await prisma.$executeRaw`
-        UPDATE "View"
-        SET "lastViewAt" = NOW()
-        WHERE "postId" = ${postId}
-        AND "userId" = ${session.user.id}
-      `;
+      await prisma.view.update({
+        where: compositeKey,
+        data: { lastViewAt: now },
+      });
     } else {
-      // Create a new view record
-      await prisma.$executeRaw`
-        INSERT INTO "View" ("id", "postId", "userId", "createdAt", "lastViewAt")
-        VALUES (gen_random_uuid(), ${postId}, ${session.user.id}, NOW(), NOW())
-      `;
+      await prisma.view.create({
+        data: {
+          postId,
+          userId: session.user.id,
+          lastViewAt: now,
+        },
+      });
     }
 
-    // Get updated view count
-    const views = await prisma.$queryRaw<{ count: number }[]>`
-      SELECT COUNT(*) as count
-      FROM "View"
-      WHERE "postId" = ${postId}
-    `;
-
-    return NextResponse.json({ 
-      viewCount: Number(views[0].count),
-      message: "View counted" 
-    });
+    const count = await prisma.view.count({ where: { postId } });
+    return NextResponse.json({ viewCount: count, message: "View counted" });
   } catch (error) {
     console.error("Error tracking view:", error);
     return NextResponse.json(
