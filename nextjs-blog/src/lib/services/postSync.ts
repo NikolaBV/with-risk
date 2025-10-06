@@ -1,5 +1,5 @@
 // src/lib/services/postSync.ts
-import { prisma } from "../prisma";
+import { prisma } from "@/lib/prisma";
 import { client } from "../../app/sanity/client";
 
 // Function to sync all posts from Sanity to the database
