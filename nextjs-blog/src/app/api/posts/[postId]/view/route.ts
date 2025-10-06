@@ -1,4 +1,4 @@
-{{ ... }}
+import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
@@ -45,7 +45,12 @@ export async function GET(
 // POST /api/posts/[postId]/view
 export async function POST(
   request: Request,
-{{ ... }}
+  { params }: { params: Promise<{ postId: string }> }
+) {
+  const { postId } = await params;
+
+  if (!postId) {
+    return NextResponse.json(
       { error: "Post ID is required" },
       { status: 400 }
     );
@@ -54,20 +59,22 @@ export async function POST(
   try {
     const cookieStore = cookies();
     const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
-    
     const { data: { session } } = await supabase.auth.getSession();
 
     if (!session?.user?.id) {
-      console.error("Unauthorized: No user session");
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-{{ ... }}
+
+    // Ensure post exists
+    const post = await prisma.post.findUnique({ where: { id: postId } });
+    if (!post) {
+      return NextResponse.json(
         { error: "Post not found" },
         { status: 404 }
       );
     }
 
-    // Check if user has viewed the post recently (within last 30 minutes)
+    // Composite unique key on View: @@unique([postId, userId]) in schema
     const compositeKey = { postId_userId: { postId, userId: session.user.id } } as const;
     const existing = await prisma.view.findUnique({
       where: compositeKey,
@@ -77,25 +84,15 @@ export async function POST(
     const now = new Date();
     const thirtyMinutesAgo = new Date(now.getTime() - 30 * 60 * 1000);
 
-    if (existing?.lastViewAt) {
-      const lastViewAt = new Date(existing.lastViewAt);
-      if (lastViewAt > thirtyMinutesAgo) {
-        const count = await prisma.view.count({ where: { postId } });
-        return NextResponse.json({ viewCount: count, message: "View not counted (too soon)" });
-      }
+    if (existing?.lastViewAt && new Date(existing.lastViewAt) > thirtyMinutesAgo) {
+      const count = await prisma.view.count({ where: { postId } });
+      return NextResponse.json({ viewCount: count, message: "View not counted (too soon)" });
+    }
 
-      await prisma.view.update({
-        where: compositeKey,
-        data: { lastViewAt: now },
-      });
+    if (existing) {
+      await prisma.view.update({ where: compositeKey, data: { lastViewAt: now } });
     } else {
-      await prisma.view.create({
-        data: {
-          postId,
-          userId: session.user.id,
-          lastViewAt: now,
-        },
-      });
+      await prisma.view.create({ data: { postId, userId: session.user.id, lastViewAt: now } });
     }
 
     const count = await prisma.view.count({ where: { postId } });
