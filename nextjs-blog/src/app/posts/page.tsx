@@ -6,6 +6,7 @@ import { Pagination } from '@/components/Pagination';
 import { Card } from '@/components/ui/card';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 interface Post {
   id: string;
@@ -74,6 +75,12 @@ export default function PostsPage() {
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
+        // Ensure DB is in sync with Sanity so new posts show up
+        try {
+          await fetch('/api/sync/posts', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) });
+        } catch (e) {
+          console.error('Post sync failed (non-blocking):', e);
+        }
         fetchPosts({ page: 1 });
       } else {
         router.push('/auth/signin');
@@ -111,17 +118,19 @@ export default function PostsPage() {
         <>
           <div className="grid gap-6 mt-8">
             {posts.map((post) => (
-              <Card key={post.id} className="p-6">
-                <h2 className="text-xl font-semibold mb-2">{post.title}</h2>
-                <div className="text-sm text-gray-500 mb-4">
-                  Published: {new Date(post.publishedAt).toLocaleDateString()}
-                </div>
-                <div className="flex gap-4 text-sm text-gray-600">
-                  <span>{post.comments.length} comments</span>
-                  <span>{post.likes.length} likes</span>
-                  <span>{post.views.length} views</span>
-                </div>
-              </Card>
+              <Link key={post.id} href={`/${post.slug}`} className="block">
+                <Card className="p-6 hover:bg-accent cursor-pointer">
+                  <h2 className="text-xl font-semibold mb-2">{post.title}</h2>
+                  <div className="text-sm text-gray-500 mb-4">
+                    Published: {new Date(post.publishedAt).toLocaleDateString()}
+                  </div>
+                  <div className="flex gap-4 text-sm text-gray-600">
+                    <span>{post.comments.length} comments</span>
+                    <span>{post.likes.length} likes</span>
+                    <span>{post.views.length} views</span>
+                  </div>
+                </Card>
+              </Link>
             ))}
           </div>
 
@@ -136,4 +145,4 @@ export default function PostsPage() {
       )}
     </div>
   );
-} 
+}
