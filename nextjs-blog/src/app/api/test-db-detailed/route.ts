@@ -9,7 +9,7 @@ export async function GET() {
       databaseUrlLength: process.env.DATABASE_URL?.length || 0,
       databaseUrlStart: process.env.DATABASE_URL?.substring(0, 20) || 'NOT_SET',
     },
-    tests: [] as Array<{name: string, success: boolean, error?: string, details?: any}>
+    tests: [] as Array<{name: string, success: boolean, error?: string, details?: unknown}>
   };
 
   // Test 1: Basic Prisma connection
