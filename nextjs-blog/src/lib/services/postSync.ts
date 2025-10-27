@@ -164,7 +164,7 @@ export async function deletePostBySanityId(sanityId: string) {
     return deleted;
   } catch (error) {
     // If not found, ignore
-    if ((error as any)?.code === 'P2025') {
+    if (error && typeof error === 'object' && 'code' in error && error.code === 'P2025') {
       return null;
     }
     console.error("Error deleting post:", error);

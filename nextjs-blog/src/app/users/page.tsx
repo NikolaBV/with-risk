@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { SearchBar } from '@/components/SearchBar';
 import { Pagination } from '@/components/Pagination';
 import { Card } from '@/components/ui/card';
@@ -41,7 +41,7 @@ export default function UsersPage() {
   });
   const [loading, setLoading] = useState(true);
 
-  const fetchUsers = async (params: {
+  const fetchUsers = useCallback(async (params: {
     page?: number;
     search?: string;
     sortBy?: string;
@@ -68,7 +68,7 @@ export default function UsersPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [pagination.limit]);
 
   useEffect(() => {
     const checkSession = async () => {
@@ -81,7 +81,7 @@ export default function UsersPage() {
     };
 
     checkSession();
-  }, []);
+  }, [fetchUsers, router, supabase.auth]);
 
   const handleSearch = (params: {
     search: string;
