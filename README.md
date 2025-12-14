@@ -1,221 +1,182 @@
-# Distributed systems
+# With Risk - Astro Blog
 
-# Документация на API за Блог система
+A modern blog platform built with **Astro**, **Sanity CMS**, and a **.NET API** backend.
 
-## Общ преглед
-
-Документация на REST API за блог система, разработена с Next.js, Sanity.io и Supabase.
-
-## Архитектура на системата
-
-Системата използва хибридна архитектура, комбинираща няколко специализирани услуги:
-
-### Sanity.io CMS
-
-Sanity се използва като headless CMS за управление на съдържанието на блога поради следните предимства:
-
-- **Структурирано съдържание**: Позволява дефиниране на схеми за различни типове съдържание (публикации, автори, категории)
-- **Гъвкаво управление**: Предоставя удобен редактор за създаване и редактиране на съдържание. Това е много удобно за защото блога ще се използва от ученици по журналистика в Софийския университет и те лесно могат да работят върху съдържанието си.
-- **Real-time API**: Осигурява моментален достъп до съдържанието чрез GROQ заявки
-- **Версиониране**: Поддържа история на промените в съдържанието
-- **Медия управление**: Интегрирана система за управление на изображения с автоматично преоразмеряване
-
-Системата синхронизира данните от Sanity с локалната база данни (Supabase) чрез webhook за автоматично актуализиране при промени в съдържанието.
-
-### Supabase
-
-Supabase се използва като база данни и система за автентикация поради:
-
-- **PostgreSQL база данни**: Пълнофункционална релационна база данни с отворен код
-- **Authentication**: Готови решения за регистрация, вход и управление на потребители
-- **JavaScript/TypeScript SDK**: Улеснява интеграцията с Next.js приложения
-
-Supabase се използва за съхранение на потребителски данни, коментари, харесвания и други интерактивни елементи, докато основното съдържание на публикациите се управлява от Sanity.
-
-## Структура на база данни
-
-![Untitled.svg](Untitled.svg)
-
-## Интеграция между Sanity и Supabase
-
-Системата използва двупосочна синхронизация между Sanity и Supabase:
-
-1. **Sanity към Supabase**:
-   - Webhook от Sanity известява API-то за промени в съдържанието
-   - Системата извлича актуализираните данни и ги записва в Supabase
-   - Това поддържа метаданни като харесвания и коментари, свързани с актуалното съдържание
-2. **Supabase към Frontend**:
-   - Next.js приложението използва Supabase клиент за достъп до данните
-   - Потребителските взаимодействия се записват директно в Supabase
-   - Realtime функционалността на Supabase позволява актуализации в реално време
-
-## API Endpoints
-
-### Публично съдържание
-
-### Извличане на всички публикации
+## 🏗️ Architecture
 
 ```
-GET /posts
-
+with-risk-astro/
+├── blog/                 # Astro Frontend (SSG for SEO)
+│   ├── src/
+│   │   ├── components/   # Astro + React components
+│   │   ├── layouts/      # Page layouts
+│   │   ├── pages/        # Static routes
+│   │   └── lib/          # Sanity client, API agent
+│   └── public/           # Static assets
+│
+├── api/                  # .NET API Backend (Clean Architecture)
+│   ├── API/              # Controllers, Extensions
+│   ├── Application/      # CQRS Handlers, DTOs
+│   ├── Domain/           # Entities
+│   └── Persistence/      # EF Core, Migrations
+│
+└── ../studio-blog/       # Sanity Studio (existing)
 ```
 
-**Параметри:** limit, page, category
+## 🚀 Quick Start
 
-**Връща:** Списък с публикации (id, заглавие, slug, дата, изображение, автор)
+### Prerequisites
 
-### Извличане на публикация по slug
+- Node.js 18+
+- .NET 8 SDK (or .NET 10 if available)
+- Your existing Sanity Studio project
 
-```
-GET /posts/{slug}
+### 1. Configure Environment Variables
 
-```
+Create a `.env` file in the `blog/` folder:
 
-**Връща:** Детайлна информация за публикацията
+```env
+# Sanity Configuration
+PUBLIC_SANITY_PROJECT_ID=your_project_id
+PUBLIC_SANITY_DATASET=production
 
-### Извличане на коментари по публикация
-
-```
-GET /posts/{postId}/comments
-
-```
-
-**Параметри:** limit, page
-
-**Връща:** Списък с коментари
-
-### Потребители
-
-### Регистрация на потребител
-
-```
-POST /auth/register
-
+# API Configuration
+PUBLIC_API_URL=http://localhost:5000/api
 ```
 
-**Приема:** email, password, name
+You can find your Sanity project ID in [Sanity Manage](https://www.sanity.io/manage).
 
-**Връща:** Информация за създадения потребител и токен
+### 2. Start the API
 
-### Вход в системата
-
-```
-POST /auth/login
-
+```bash
+cd api
+dotnet run --project API
 ```
 
-**Приема:** email, password
+The API will start at `http://localhost:5000` with Swagger at `/swagger`.
 
-**Връща:** Информация за потребителя и токен
+### 3. Start the Blog
 
-### Обновяване на потребителски профил
-
-```
-PUT /users/profile
-
+```bash
+cd blog
+npm run dev
 ```
 
-**Приема:** name, bio, website, social_links
+The blog will start at `http://localhost:4321`.
 
-**Връща:** Обновена информация за профила
+### 4. Start Sanity Studio (from existing project)
 
-### Извличане на профил на потребител
-
-```
-GET /users/{userId}/profile
-
+```bash
+cd ../studio-blog
+npm run dev
 ```
 
-**Връща:** Публична профилна информация
+## 📝 How It Works
 
-### Взаимодействия
+### Content Flow
 
-### Добавяне на коментар
+1. **Authors** create/edit posts in **Sanity Studio** (user-friendly CMS)
+2. **Astro** fetches content from Sanity at **build time** → Static HTML (great SEO!)
+3. **React islands** hydrate for interactive features (comments, likes)
+4. **.NET API** handles user interactions → **SQLite** database (simple!)
 
-```
-POST /posts/{postId}/comments
+### Static Site Generation (SSG)
 
-```
+Posts are generated at build time with full HTML:
 
-**Приема:** content, parent_id (опционално)
-
-**Връща:** Създаденият коментар
-
-### Харесване на публикация
-
-```
-POST /posts/{postId}/like
-
-```
-
-**Връща:** Статус на харесване и брой харесвания
-
-### Следване на потребител
-
-```
-POST /users/{userId}/follow
-
+```astro
+---
+// This runs at BUILD TIME - not on every request
+export async function getStaticPaths() {
+  const slugs = await sanityClient.fetch(queries.allPostSlugs);
+  return slugs.map(slug => ({ params: { slug } }));
+}
+---
 ```
 
-**Връща:** Статус на следване
+### React Islands
 
-### Администраторски функции
+Interactive components hydrate on the client:
 
-### Създаване на категория
-
-```
-POST /admin/categories
-
-```
-
-**Приема:** name, slug, description
-
-**Връща:** Създадената категория
-
-### Синхронизиране на публикации от Sanity
-
-```
-POST /admin/sync/posts
-
+```astro
+<!-- Only hydrates when visible in viewport -->
+<CommentSection client:visible postSlug={slug} />
+<LikeButton client:visible postSlug={slug} />
 ```
 
-**Връща:** Информация за синхронизираните публикации
+## 🛠️ Development
 
-### Webhook Endpoints
+### Building for Production
 
+```bash
+# Build the blog
+cd blog
+npm run build
+
+# Build the API
+cd api
+dotnet publish -c Release
 ```
-POST /webhooks/sanity
 
+### API Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/comments/{postSlug}` | GET | Get comments for a post |
+| `/api/comments` | POST | Create a comment |
+| `/api/posts/{postSlug}/stats` | GET | Get post stats (likes, views) |
+| `/api/posts/{postSlug}/like` | POST | Toggle like |
+| `/api/posts/{postSlug}/view` | POST | Record view |
+
+## 🚢 Deployment
+
+### Blog (Static)
+
+Deploy the `blog/dist` folder to any static host:
+- **Netlify**: Connect repo, build command `npm run build`, publish `dist`
+- **Vercel**: Similar setup
+- **Cloudflare Pages**: Same approach
+
+### API (.NET)
+
+- **Railway**: Easy Docker deployment
+- **Render**: Free tier available
+- **Azure App Service**: Native .NET support
+
+### Sanity Studio
+
+Already hosted by Sanity, or deploy with:
+```bash
+cd ../studio-blog
+npx sanity deploy
 ```
 
-**Приема:** Sanity webhook събития
+## 📁 Key Files
 
-**Връща:** Потвърждение за обработка
+| File | Purpose |
+|------|---------|
+| `blog/src/lib/sanity.ts` | Sanity client and GROQ queries |
+| `blog/src/lib/api.ts` | API agent (like your example) |
+| `blog/src/layouts/BaseLayout.astro` | Main layout with SEO meta tags |
+| `blog/src/pages/posts/[slug].astro` | Dynamic post pages |
+| `api/API/Program.cs` | API entry point |
+| `api/Persistence/DataContext.cs` | EF Core database context |
 
-## Автентикация и сигурност
+## ✨ Features
 
-Системата използва JWT базирана автентикация, управлявана от Supabase Auth:
+- ✅ **Great SEO** - Static HTML at build time
+- ✅ **Sanity CMS** - Non-technical users can manage content
+- ✅ **Clean Architecture** - Familiar .NET patterns
+- ✅ **SQLite** - No cloud database complexity
+- ✅ **React Islands** - Interactive where needed
+- ✅ **TypeScript** - Full type safety
+- ✅ **Tailwind-like styling** - CSS variables, modern design
 
-- **JWT токени**: Всеки метод изискваш authentication включва JWT токен в хедъра:
-  ```
-  Authorization: Bearer {token}
+## 🔜 Next Steps
 
-  ```
-- **Роли и права**: Supabase Row Level Security (RLS) прилага правила за достъп на ниво бази данни
-- **Защита от CSRF**: Имплементирани мерки срещу Cross-Site Request Forgery атаки
-- **API Rate Limiting**: Ограничения на броя заявки за предотвратяване на злоупотреби
+1. Set up your Sanity environment variables
+2. Add authentication (JWT) to the API if needed
+3. Customize the styling in `BaseLayout.astro`
+4. Deploy!
 
-## Техническа имплементация
 
-### Frontend
-
-- **Next.js**: React framework за рендериране на страници от сървъра (SSR) и статично генериране (SSG). Избрах next.js защото работя като front-end dev изпозлвайки React и имам опит с него, както и заради важността на server-side rendering в блоговете за да максимализираме SEO-то.
-- **TypeScript**: За типова безопасност и по-добро разработване
-- **TailwindCSS**: За стилизиране на компоненти
-
-### Backend
-
-- **Next.js API Routes**: Сървърна имплементация на API endpoints
-- **Sanity Client**: За извличане на съдържание от Sanity CMS
-- **Supabase JS Client**: За достъп до Supabase база данни и автентикация
-- **Vercel**: За хостинг и деплойване на приложението
