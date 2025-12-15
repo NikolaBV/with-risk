@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "AtVm6a1z58U=",
+  "dgSpecHash": "RD3Qwjn5vOM=",
   "success": true,
-  "projectFilePath": "D:\\Programming\\Web Applications\\with-risk\\with-risk-astro\\api\\API\\API.csproj",
+  "projectFilePath": "D:\\Programming\\Web Applications\\with-risk\\api\\API\\API.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\nikol\\.nuget\\packages\\automapper\\12.0.1\\automapper.12.0.1.nupkg.sha512",
     "C:\\Users\\nikol\\.nuget\\packages\\automapper.extensions.microsoft.dependencyinjection\\12.0.1\\automapper.extensions.microsoft.dependencyinjection.12.0.1.nupkg.sha512",

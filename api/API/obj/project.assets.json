@@ -4150,11 +4150,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\Programming\\Web Applications\\with-risk\\with-risk-astro\\api\\API\\API.csproj",
+      "projectUniqueName": "D:\\Programming\\Web Applications\\with-risk\\api\\API\\API.csproj",
       "projectName": "API",
-      "projectPath": "D:\\Programming\\Web Applications\\with-risk\\with-risk-astro\\api\\API\\API.csproj",
+      "projectPath": "D:\\Programming\\Web Applications\\with-risk\\api\\API\\API.csproj",
       "packagesPath": "C:\\Users\\nikol\\.nuget\\packages\\",
-      "outputPath": "D:\\Programming\\Web Applications\\with-risk\\with-risk-astro\\api\\API\\obj\\",
+      "outputPath": "D:\\Programming\\Web Applications\\with-risk\\api\\API\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -4175,8 +4175,8 @@
         "net10.0": {
           "targetAlias": "net10.0",
           "projectReferences": {
-            "D:\\Programming\\Web Applications\\with-risk\\with-risk-astro\\api\\Application\\Application.csproj": {
-              "projectPath": "D:\\Programming\\Web Applications\\with-risk\\with-risk-astro\\api\\Application\\Application.csproj"
+            "D:\\Programming\\Web Applications\\with-risk\\api\\Application\\Application.csproj": {
+              "projectPath": "D:\\Programming\\Web Applications\\with-risk\\api\\Application\\Application.csproj"
             }
           }
         }

@@ -10,3 +10,15 @@ D:\Programming\Web Applications\with-risk\with-risk-astro\api\Domain\obj\Debug\n
 D:\Programming\Web Applications\with-risk\with-risk-astro\api\Domain\obj\Debug\net10.0\refint\Domain.dll
 D:\Programming\Web Applications\with-risk\with-risk-astro\api\Domain\obj\Debug\net10.0\Domain.pdb
 D:\Programming\Web Applications\with-risk\with-risk-astro\api\Domain\obj\Debug\net10.0\ref\Domain.dll
+D:\Programming\Web Applications\with-risk\api\Domain\bin\Debug\net10.0\Domain.deps.json
+D:\Programming\Web Applications\with-risk\api\Domain\bin\Debug\net10.0\Domain.dll
+D:\Programming\Web Applications\with-risk\api\Domain\bin\Debug\net10.0\Domain.pdb
+D:\Programming\Web Applications\with-risk\api\Domain\obj\Debug\net10.0\Domain.GeneratedMSBuildEditorConfig.editorconfig
+D:\Programming\Web Applications\with-risk\api\Domain\obj\Debug\net10.0\Domain.AssemblyInfoInputs.cache
+D:\Programming\Web Applications\with-risk\api\Domain\obj\Debug\net10.0\Domain.AssemblyInfo.cs
+D:\Programming\Web Applications\with-risk\api\Domain\obj\Debug\net10.0\Domain.csproj.CoreCompileInputs.cache
+D:\Programming\Web Applications\with-risk\api\Domain\obj\Debug\net10.0\Domain.sourcelink.json
+D:\Programming\Web Applications\with-risk\api\Domain\obj\Debug\net10.0\Domain.dll
+D:\Programming\Web Applications\with-risk\api\Domain\obj\Debug\net10.0\refint\Domain.dll
+D:\Programming\Web Applications\with-risk\api\Domain\obj\Debug\net10.0\Domain.pdb
+D:\Programming\Web Applications\with-risk\api\Domain\obj\Debug\net10.0\ref\Domain.dll
